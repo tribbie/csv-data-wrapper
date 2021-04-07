@@ -1,2 +1,2 @@
-# csv-wrapper
-A csv wrapper class
+# csv-data-wrapper
+A csv data wrapper class
