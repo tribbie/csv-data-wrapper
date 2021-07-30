@@ -34,9 +34,9 @@ class DataTable:
         return
 
     def show_fields(self, fieldnames=None):
-        logging.info(f"=== Showing fields {fieldnames}")
         if fieldnames == None:
             fieldnames = self.fields
+        logging.info(f"=== Showing fields {fieldnames}")
         logging.info(f" [HEADER]--[{']-['.join(fieldnames)}]")
         rowcount = 0
         for row in self.records:
@@ -49,6 +49,46 @@ class DataTable:
                 else:
                     fieldvalues.append('<' + fieldname.upper() + '>')
             logging.info(f" [#{str(rowcount)}]--[{']-['.join(fieldvalues)}]")
+        return
+
+    def show_record(self, id):
+        logging.info(f"=== Showing record {id}")
+        fieldnames = self.fields
+        for record in self.records:
+            if record[self.displayfield] == id:
+                logging.debug(record)
+                for fieldname in fieldnames:
+                    logging.info(f" [{fieldname}]=[{record[fieldname]}]")
+        return
+
+    def remove_records(self, removedict):
+        logging.info(f"=== Removing records where {removedict}")
+        removefieldnames = removedict.keys()
+        if len(removefieldnames) == 0:
+            logging.warning(f" WARNING - no remove filter specified - not removing anything")
+            return
+        for removefieldname in removefieldnames:
+            if removefieldname in self.fields:
+                # logging.info(f" OK - remove field {removefieldname} exist")
+                pass
+            else:
+                logging.error(f" ERROR - remove field {removefieldname} does not exist - not removing anything")
+                return
+        retainedrecords = []
+        for row in self.records:
+            logging.debug(row)
+            # matchvalues = []
+            matchcount = 0
+            for fieldname in removefieldnames:
+                # matchvalues.append(row[fieldname])
+                if removedict[fieldname] == row[fieldname]:
+                    matchcount += 1
+            if matchcount == len(removefieldnames):
+                logging.info(f" Exact match found for record [{row[self.displayfield]}] -- will be removed")
+            else:
+                # logging.info(f" Retaining [{row[self.displayfield]}]")
+                retainedrecords.append(row)
+            self.records = retainedrecords
         return
 
     def add_fixed_field(self, newfield, value):
@@ -73,6 +113,26 @@ class DataTable:
                 logging.debug(f"-- adding to [{record[self.displayfield]}] - [{newfield}]=[{countervalue}]")
                 record[newfield] = str(countervalue)
                 countervalue += 1
+        return
+
+    def add_combined_field(self, newfield, fieldstocombine, delimiter=''):
+        logging.info(f"=== Adding combined field [{newfield}] - combining {fieldstocombine}")
+        if newfield in self.fields:
+            logging.error(f"ERROR - ERROR - field [{newfield}] already exists - NOT ADDING FIELD!!")
+        else:
+            self.fields.append(newfield)
+            for record in self.records:
+                combinedfields = []
+                for field in fieldstocombine:
+                    if field in record.keys():
+                        if record[field].strip() == '':
+                            logging.warning(f"WARNING - WARNING - skipping empty field [{field}]")
+                        else:
+                            combinedfields.append(record[field].strip())
+                    else:
+                        logging.error(f"ERROR - ERROR - field [{field}] not found in this record - CANNOT COMBINE!!")
+                record[newfield] = delimiter.join(combinedfields)
+                logging.debug(f"-- adding to [{record[self.displayfield]}] - [{newfield}]=[{record[newfield]}]")
         return
 
     def add_combined_features_field(self, newfield, featurefields):
@@ -100,7 +160,7 @@ class DataTable:
         else:
             self.fields.append(newfield)
             for record in self.records:
-                combinedcategories = 'Wijn'
+                combinedcategories = ''
                 for categoryfield in categoryfields:
                     if categoryfield in record.keys():
                         combinedcategories += ',' + record[categoryfield].strip().replace("/", "!")
@@ -123,6 +183,16 @@ class DataTable:
                 else:
                     record[newfield] = ""
                     logging.debug(f"-- WARNING - WARNING - No [{sourcefield}] found for [{record[self.displayfield]}] -- adding empty field")
+        return
+
+    def replace_in_field(self, field, frompart, topart):
+        logging.info(f"=== Replacing [{frompart}] into [{topart}] in field [{field}]")
+        if field in self.fields:
+            for record in self.records:
+                record[field] = record[field].replace(frompart, topart)
+                logging.debug(f"-- after replacement in [{record[self.displayfield]}]: [{field}]=[{record[field]}]")
+        else:
+            logging.error(f"ERROR - ERROR - field [{field}] does not exists - NOT REPLACING IN FIELD!!")
         return
 
     def re_map_table(self, fieldmap, displayfield='id'):
