@@ -1,6 +1,7 @@
 ## A data wrapper class around a data dictionary from a csv kind of datafile
 ## Version 0.1
 
+import os
 import csv
 import logging
 
@@ -185,6 +186,26 @@ class DataTable:
                     logging.debug(f"-- WARNING - WARNING - No [{sourcefield}] found for [{record[self.displayfield]}] -- adding empty field")
         return
 
+    def add_existing_image_field(self, basefield, newfield, checklocation='./', outputlocation='https://domain.org/images/', suffix='.jpg'):
+        logging.info(f"=== Adding existing images based on [{basefield}] into [{newfield}] with location=[{checklocation}] and suffix=[{suffix}]")
+        if newfield in self.fields:
+            logging.error(f"ERROR - ERROR - field [{newfield}] already exists - NOT ADDING FILE-EXISTS FIELD!!")
+            return
+        if not basefield in self.fields:
+            logging.error(f"ERROR - ERROR - base field [{basefield}] does not exists - NOT ADDING FILE-EXISTS FIELD!!")
+            return
+        self.fields.append(newfield)
+        for record in self.records:
+            imagetocheck = checklocation + record[basefield] + suffix
+            imagetoadd = outputlocation + record[basefield] + suffix
+            if os.path.isfile(imagetocheck):
+                logging.info(f"-- Image [{imagetocheck}] found for [{record[self.displayfield]}] -> added [{imagetoadd}]")
+                record[newfield] = imagetoadd
+            else:
+                logging.info(f"-- WARNING - WARNING - Image [{imagetocheck}] not found for [{record[self.displayfield]}] -- adding empty field")
+                record[newfield] = ""
+        return
+
     def replace_in_field(self, field, frompart, topart):
         logging.info(f"=== Replacing [{frompart}] into [{topart}] in field [{field}]")
         if field in self.fields:
@@ -196,7 +217,7 @@ class DataTable:
         return
 
     def re_map_table(self, fieldmap, displayfield='id'):
-        logging.info(f"=== Re-mapping the records for Prestashop/30Bees import")
+        logging.info(f"=== Re-mapping the records for Prestashop import")
         remapped_table = DataTable(displayfield=displayfield)
         remapped_fieldlist = []
         for field in fieldmap.values():
