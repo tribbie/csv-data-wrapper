@@ -4,12 +4,13 @@
 ### FYI - header line of this example file:
 ###       "Code";"Type";"Wijn";"Land";"Regio";" Prijs/fles ";"Beschrijving";"Description";"Website";"Pakketactie"
 ##
-## Run like so: python3 dimarco-csv-oo-prepare-products.py --inputfile data/input/Website2021.csv --limit 5
+## Run like so: python3 test-diff-csv.py --files data/test-data-in.csv,data/test-data-in-different.csv --delimiter '|' --fields Name,Active,Color,Description --key Name
 
 import csv
 import time
 import argparse
-import logging
+import logging## Run like so: python3 dimarco-csv-oo-prepare-products.py --inputfile data/input/Website2021.csv --limit 5
+
 import pprint
 from data_table import DataTable
 
