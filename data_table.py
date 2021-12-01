@@ -12,14 +12,14 @@ class DataTable:
         self.fields = []
         self.records = []
 
-    def load_csv(self, filename, limit):
+    def load_csv(self, filename, fielddelimiter='|', limit = 0):
         logging.info(f"=== Loading CSV from [{filename}]")
         header = []
         csv_dict = {}
         try:
             rowcount = 1
             with open(filename, "r") as csvfile:
-                csvreader = csv.DictReader(csvfile, delimiter='|', quotechar='"')
+                csvreader = csv.DictReader(csvfile, delimiter=fielddelimiter, quotechar='"')
                 self.fields = csvreader.fieldnames
                 logging.info(f"HEADERLINE = {self.fields}")
                 for row in csvreader:
@@ -91,6 +91,23 @@ class DataTable:
                 retainedrecords.append(row)
             self.records = retainedrecords
         return
+
+    def check_unique_field(self, fieldname):
+        uniqueness = 0
+        logging.info(f"=== Checking uniqueness of field [{fieldname}]")
+        if fieldname not in self.fields:
+            logging.error(f"ERROR - ERROR - field [{fieldname}] not found exists - NOT CHECKING UNIQUENESS!!")
+        else:
+            uniqueDict = {}
+            for record in self.records:
+                logging.debug(f"-- checking [{record[fieldname]}] to uniqueness check")
+                uniqueDict[record[fieldname]] = ''
+        if (len(self.records) == len(uniqueDict)):
+            logging.info(f" Field [{fieldname}] -- appears to be unique")
+            uniqueness = 1
+        else:
+            logging.warning(f" WARNING - Field [{fieldname}] -- is not unique")
+        return uniqueness
 
     def add_fixed_field(self, newfield, value):
         logging.info(f"=== Adding fixed field [{newfield}] - with value [{value}]")

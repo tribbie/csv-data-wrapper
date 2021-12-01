@@ -1,7 +1,7 @@
 #!/usr/bin/python3 -tt
 
-## Run like so: python3 test-data-wrapper.py --inputfile data/input/test-date.csv --limit 5
-## test-data header: "Active"|"Name"|"Category"|"Type"|"Country"|"Description"
+## Run like so: python3 test-data-wrapper.py --inputfile data/test-data-in.csv --limit 5
+## test-data header: "Active"|"Name"|"Category"|"Type"|"Country"|"Color"|"Description"
 
 import csv
 import time
@@ -18,11 +18,13 @@ def chapter(title, filler='-'):
 def configure():
     parser = argparse.ArgumentParser(description='Morph Excel-csv into Prestashop-products-csv.')
     parser.add_argument('--inputfile', required=True, help='input file')
-    parser.add_argument('--limit', required=True, help='number of records to process (0 processes them all)')
+    parser.add_argument('--limit', default=0, help='number of records to process (0 processes them all)')
+    parser.add_argument('--delimiter', default=';', help='field delimiter')
     args = parser.parse_args()
     configuration = {}
-    configuration['limit']          = int(args.limit)
     configuration['inputfile']      = args.inputfile
+    configuration['delimiter']      = args.delimiter
+    configuration['limit']          = int(args.limit)
     configuration['stamp']          = time.strftime("%Y%m%d-%H%M%S")
     configuration['outputfile']     = 'data/output/test-output-' + configuration['stamp'] + '.csv'
     # configuration['imglocation']    = 'https://www.dimarco.be/webshop/img/dimarcowines/'
@@ -34,6 +36,7 @@ def configure():
             'Name': "NAME",
             'Type': "TYPE",
             'Country': "COUNTRY",
+            'Color': "COLOR",
             'Description': "DESCRIPTION",
             'fix-maincat': "CATEGORY",
             'Category': "SUBCATEGORY",
@@ -54,7 +57,7 @@ def main():
 
     chapter(f"Load csv [{conf['inputfile']}]")
     input_data = DataTable(displayfield='Name')
-    input_data.load_csv(conf['inputfile'], conf['limit'])
+    input_data.load_csv(conf['inputfile'], conf['delimiter'], conf['limit'])
     # input_data.show_fields(('Active', 'Name', 'Description'))
     input_data.show_fields()
 
@@ -65,6 +68,9 @@ def main():
     # input_data.replace_in_field(field='Description', frompart='\n', topart='<br/>')
     input_data.replace_in_field(field='Description', frompart=';', topart='.')
     # input_data.show_fields(('Active', 'Name', 'Description'))
+
+    chapter(f"Checking uniqueness of field Name")
+    isUnique = input_data.check_unique_field(fieldname='Name')
 
     chapter(f"Add some extra fields")
     input_data.add_counter_field('gen-id', initialvalue=10001)
@@ -86,7 +92,9 @@ def main():
 
     chapter(f"Some tests - output to screen")
     output_data.show_fields(('UNIQUE-ID', 'NAME', 'TYPE', 'CATEGORIES', 'FEATURES'))
-    output_data.show_record('Bollie')
+    # output_data.show_record('Bollie')
+    isUnique = output_data.check_unique_field(fieldname='NAME')
+
 
     # Finally we write the resulting products csv file
     chapter(f"Writing resulting csv - [{conf['outputfile']}]")
