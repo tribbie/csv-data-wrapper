@@ -92,21 +92,21 @@ class DataTable:
             self.records = retainedrecords
         return
 
-    def check_unique_field(self, fieldname):
-        uniqueness = 0
+    def is_unique_field(self, fieldname):
+        uniqueness = False
         logging.info(f"=== Checking uniqueness of field [{fieldname}]")
         if fieldname not in self.fields:
-            logging.error(f"ERROR - ERROR - field [{fieldname}] not found exists - NOT CHECKING UNIQUENESS!!")
+            logging.error(f"field [{fieldname}] not found exists - NOT CHECKING UNIQUENESS!!")
         else:
             uniqueDict = {}
             for record in self.records:
                 logging.debug(f"-- checking [{record[fieldname]}] to uniqueness check")
                 uniqueDict[record[fieldname]] = ''
-        if (len(self.records) == len(uniqueDict)):
-            logging.info(f" Field [{fieldname}] -- appears to be unique")
-            uniqueness = 1
-        else:
-            logging.warning(f" WARNING - Field [{fieldname}] -- is not unique")
+            if (len(self.records) == len(uniqueDict)):
+                logging.info(f" Field [{fieldname}] -- appears to be unique")
+                uniqueness = True
+            else:
+                logging.warning(f" WARNING - Field [{fieldname}] -- is not unique")
         return uniqueness
 
     def add_fixed_field(self, newfield, value):

@@ -70,7 +70,7 @@ def main():
     # input_data.show_fields(('Active', 'Name', 'Description'))
 
     chapter(f"Checking uniqueness of field Name")
-    isUnique = input_data.check_unique_field(fieldname='Name')
+    isUnique = input_data.is_unique_field(fieldname='Name')
 
     chapter(f"Add some extra fields")
     input_data.add_counter_field('gen-id', initialvalue=10001)
@@ -93,8 +93,7 @@ def main():
     chapter(f"Some tests - output to screen")
     output_data.show_fields(('UNIQUE-ID', 'NAME', 'TYPE', 'CATEGORIES', 'FEATURES'))
     # output_data.show_record('Bollie')
-    isUnique = output_data.check_unique_field(fieldname='NAME')
-
+    isUnique = output_data.is_unique_field(fieldname='NAME')
 
     # Finally we write the resulting products csv file
     chapter(f"Writing resulting csv - [{conf['outputfile']}]")
